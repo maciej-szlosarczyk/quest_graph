@@ -1,0 +1,65 @@
+schema {
+  query: RootQueryType
+}
+
+type QuestConnection implements Connection {
+  edges: [Quest]
+  pageInfo: PageInfo!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+interface Node {
+  id: ID!
+}
+
+"a quest"
+type Quest implements Node {
+  id: ID!
+  name: String!
+  resources(first: Int, last: Int, after: String, before: String): ResourceConnection
+  program: Program!
+}
+
+type ResourceConnection implements Connection {
+  edges: [Resource]
+  pageInfo: PageInfo!
+}
+
+type RootQueryType {
+  programs: [Program]
+  program(id: ID!): Program
+  quests: [Quest]
+  quest(id: ID!): Quest
+  resources: [Resource]
+  resource(id: ID!): Resource
+}
+
+type ProgramConnection implements Connection {
+  edges: [Program]
+  pageInfo: PageInfo!
+}
+
+"a resource"
+type Resource implements Node {
+  id: ID!
+  name: String!
+  quests(first: Int, last: Int, after: String, before: String): QuestConnection
+}
+
+interface Connection {
+  edges: [Node]
+  pageInfo: PageInfo!
+}
+
+"A program"
+type Program implements Node {
+  id: ID!
+  name: String!
+  quests(first: Int, last: Int, after: String, before: String): QuestConnection
+}
