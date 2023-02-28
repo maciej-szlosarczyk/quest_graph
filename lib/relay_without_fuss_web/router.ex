@@ -25,6 +25,26 @@ defmodule RelayWithoutFussWeb.Router do
   #   pipe_through :api
   # end
 
+  pipeline :graphql do
+    plug(
+      Plug.Parsers,
+      parsers: [:urlencoded, :multipart, :json, Absinthe.Plug.Parser],
+      pass: ["*/*"],
+      json_decoder: Phoenix.json_library()
+    )
+  end
+
+  scope "/graph" do
+    pipe_through :graphql
+
+    forward("/", Absinthe.Plug, schema: RelayWithoutFuss.Schema, json_codec: Jason)
+  end
+
+  scope "/graphiql" do
+    pipe_through :graphql
+    forward("/", Absinthe.Plug.GraphiQL, schema: RelayWithoutFuss.Schema)
+  end
+
   # Enables LiveDashboard only for development
   #
   # If you want to use the LiveDashboard in production, you should put

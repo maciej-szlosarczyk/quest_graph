@@ -7,7 +7,7 @@ defmodule RelayWithoutFuss.MixProject do
       version: "0.1.0",
       elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:gettext] ++ Mix.compilers(),
+      compilers: Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -48,7 +48,17 @@ defmodule RelayWithoutFuss.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
-      {:plug_cowboy, "~> 2.5"}
+      {:plug_cowboy, "~> 2.5"},
+
+      # Absinthe crap
+      {:absinthe, "~> 1.7.0"},
+      {:absinthe_plug, "~> 1.5.0"},
+      {:absinthe_relay, "~> 1.5.0"},
+      {:dataloader, "~> 1.0"},
+
+      # Test
+      {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
 
