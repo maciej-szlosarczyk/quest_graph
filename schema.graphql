@@ -2,8 +2,21 @@ schema {
   query: RootQueryType
 }
 
+type QuestRootObject {
+  id: ID!
+  name: String!
+  resources(first: Int, last: Int, after: String, before: String): ResourceConnection
+  program: Program
+}
+
+interface Edge {
+  cursor: String!
+  node: Node!
+}
+
 type QuestConnection implements Connection {
-  edges: [Quest]
+  edges: [QuestEdge]
+  edgesCount: Int!
   pageInfo: PageInfo!
 }
 
@@ -14,52 +27,86 @@ type PageInfo {
   endCursor: String
 }
 
+type ResourceCollection {
+  nodes: [Resource]
+  totalCount: Int!
+}
+
+type QuestCollection {
+  nodes: [Quest]
+  totalCount: Int!
+}
+
 interface Node {
   id: ID!
 }
 
-"a quest"
 type Quest implements Node {
   id: ID!
   name: String!
-  resources(first: Int, last: Int, after: String, before: String): ResourceConnection
-  program: Program!
+  resources: ResourceCollection
+  program: Program
 }
 
 type ResourceConnection implements Connection {
-  edges: [Resource]
+  edges: [ResourceEdge]
+  edgesCount: Int!
   pageInfo: PageInfo!
 }
 
 type RootQueryType {
-  programs: [Program]
-  program(id: ID!): Program
-  quests: [Quest]
-  quest(id: ID!): Quest
+  "A list of program objects paginated with Relay standard."
+  programs(first: Int, last: Int, after: String, before: String): [Program]
+
+  program(id: ID!): ProgramRootObject
+
+  "A list of quest objects paginated with Relay standard."
+  quests(first: Int, last: Int, after: String, before: String): [Quest]
+
+  quest(id: ID!): QuestRootObject
+
+  "A list of resource objects paginated with Relay standard."
   resources: [Resource]
-  resource(id: ID!): Resource
+
+  resource(id: ID!): ResourceRootObject
 }
 
-type ProgramConnection implements Connection {
-  edges: [Program]
-  pageInfo: PageInfo!
+type ResourceRootObject {
+  id: ID!
+  name: String!
+  quest: Quest
 }
 
-"a resource"
+type ProgramRootObject {
+  id: ID!
+  name: String!
+  quests(first: Int, last: Int, after: String, before: String): QuestConnection
+}
+
+type ResourceEdge implements Edge {
+  cursor: String!
+  node: Resource!
+}
+
 type Resource implements Node {
   id: ID!
   name: String!
-  quests(first: Int, last: Int, after: String, before: String): QuestConnection
+  quest: Quest
+}
+
+type QuestEdge implements Edge {
+  cursor: String!
+  node: Quest!
 }
 
 interface Connection {
-  edges: [Node]
+  edges: [Edge]
+  edgesCount: Int!
   pageInfo: PageInfo!
 }
 
-"A program"
 type Program implements Node {
   id: ID!
   name: String!
-  quests(first: Int, last: Int, after: String, before: String): QuestConnection
+  quests: QuestCollection
 }

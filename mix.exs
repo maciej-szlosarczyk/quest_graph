@@ -7,7 +7,6 @@ defmodule RelayWithoutFuss.MixProject do
       version: "0.1.0",
       elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -20,7 +19,7 @@ defmodule RelayWithoutFuss.MixProject do
   def application do
     [
       mod: {RelayWithoutFuss.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :opentelemetry_exporter, :opentelemetry]
     ]
   end
 
@@ -33,7 +32,8 @@ defmodule RelayWithoutFuss.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.6.15"},
+      {:phoenix, "~> 1.7.0"},
+      {:phoenix_view, "~> 2.0"},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.6"},
       {:postgrex, ">= 0.0.0"},
@@ -41,7 +41,7 @@ defmodule RelayWithoutFuss.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 0.17.5"},
       {:floki, ">= 0.30.0", only: :test},
-      {:phoenix_live_dashboard, "~> 0.6"},
+      {:phoenix_live_dashboard, "~> 0.6.0"},
       {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
       {:telemetry_metrics, "~> 0.6"},
@@ -55,6 +55,10 @@ defmodule RelayWithoutFuss.MixProject do
       {:absinthe_plug, "~> 1.5.0"},
       {:absinthe_relay, "~> 1.5.0"},
       {:dataloader, "~> 1.0"},
+
+      # OTel
+      {:opentelemetry_exporter, "~> 1.0"},
+      {:mv_opentelemetry, github: "mindvalley/mv-opentelemetry", tag: "v1.7.0"},
 
       # Test
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},

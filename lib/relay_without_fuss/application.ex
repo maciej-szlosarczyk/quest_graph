@@ -7,6 +7,23 @@ defmodule RelayWithoutFuss.Application do
 
   @impl true
   def start(_type, _args) do
+    default_attributes = []
+
+    :ok =
+      MvOpentelemetry.register_tracer(:plug,
+        default_attributes: default_attributes,
+        query_params_whitelist: []
+      )
+
+    :ok =
+      MvOpentelemetry.register_tracer(:ecto,
+        span_prefix: [:relay_without_fuss, :repo],
+        default_attributes: default_attributes
+      )
+
+    :ok = MvOpentelemetry.register_tracer(:absinthe, default_attributes: default_attributes)
+    :ok = MvOpentelemetry.register_tracer(:dataloader, default_attributes: default_attributes)
+
     children = [
       # Start the Ecto repository
       RelayWithoutFuss.Repo,

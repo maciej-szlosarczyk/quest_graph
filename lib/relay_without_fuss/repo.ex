@@ -3,11 +3,13 @@ defmodule RelayWithoutFuss.Repo do
     otp_app: :relay_without_fuss,
     adapter: Ecto.Adapters.Postgres
 
-  def query(queryable, info) do
-    queryable
+  import Ecto.Query, only: [from: 2]
+
+  def query(queryable, _info) do
+    from q in queryable, select: q, order_by: [desc: :id]
   end
 
   def run_batch(queryable, query, col, inputs, repo_opts) do
-    Dataloader.Ecto.run_batch(Repo, queryable, query, col, inputs, repo_opts)
+    Dataloader.Ecto.run_batch(__MODULE__, queryable, query, col, inputs, repo_opts)
   end
 end

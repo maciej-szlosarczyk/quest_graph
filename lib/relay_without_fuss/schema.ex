@@ -2,7 +2,6 @@ defmodule RelayWithoutFuss.Schema do
   @moduledoc false
 
   use Absinthe.Schema
-  import Absinthe.Resolution.Helpers
 
   alias RelayWithoutFuss.Repo
   alias RelayWithoutFuss.{Program, Quest, Resource}
@@ -26,14 +25,22 @@ defmodule RelayWithoutFuss.Schema do
   end
 
   query do
+    @desc """
+    A list of program objects paginated with Relay standard.
+    """
     field :programs, type: list_of(:program) do
+      arg :first, :integer
+      arg :last, :integer
+      arg :after, :string
+      arg :before, :string
+
       resolve fn _, _ ->
         programs = Repo.all(Program)
         {:ok, programs}
       end
     end
 
-    field :program, type: :program do
+    field :program, type: :program_root_object do
       arg :id, non_null(:id)
 
       resolve fn %{id: id}, _ ->
@@ -42,14 +49,22 @@ defmodule RelayWithoutFuss.Schema do
       end
     end
 
+    @desc """
+    A list of quest objects paginated with Relay standard.
+    """
     field :quests, type: list_of(:quest) do
+      arg :first, :integer
+      arg :last, :integer
+      arg :after, :string
+      arg :before, :string
+
       resolve fn _, _ ->
         quests = Repo.all(Quest)
         {:ok, quests}
       end
     end
 
-    field :quest, type: :quest do
+    field :quest, type: :quest_root_object do
       arg :id, non_null(:id)
 
       resolve fn %{id: id}, _ ->
@@ -58,6 +73,9 @@ defmodule RelayWithoutFuss.Schema do
       end
     end
 
+    @desc """
+    A list of resource objects paginated with Relay standard.
+    """
     field :resources, type: list_of(:resource) do
       resolve fn _, _ ->
         resources = Repo.all(Resource)
@@ -65,7 +83,7 @@ defmodule RelayWithoutFuss.Schema do
       end
     end
 
-    field :resource, type: :resource do
+    field :resource, type: :resource_root_object do
       arg :id, non_null(:id)
 
       resolve fn %{id: id}, _ ->

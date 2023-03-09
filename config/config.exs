@@ -47,6 +47,15 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# Telemetry configuration
+config :opentelemetry, traces_exporter: :none
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
+
+secret_path = Path.join(__DIR__, "#{config_env()}.secret.exs")
+
+if File.exists?(secret_path) do
+  import_config "#{config_env()}.secret.exs"
+end
