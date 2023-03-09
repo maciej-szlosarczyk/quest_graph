@@ -3,7 +3,9 @@ defmodule RelayWithoutFuss.Schema.Objects do
   import Absinthe.Resolution.Helpers
 
   alias RelayWithoutFuss.Repo
-  alias RelayWithoutFuss.Schema.Relay
+
+  alias RelayWithoutFuss.Schema.Pagination
+  alias RelayWithoutFuss.Schema.Collection
 
   object :page_info do
     field :has_next_page, non_null(:boolean)
@@ -49,7 +51,7 @@ defmodule RelayWithoutFuss.Schema.Objects do
       arg :after, :string
       arg :before, :string
 
-      resolve dataloader(Repo, :quests, callback: &Relay.connection_callback/3)
+      resolve dataloader(Repo, :quests, callback: &Pagination.callback/3)
     end
   end
 
@@ -61,12 +63,7 @@ defmodule RelayWithoutFuss.Schema.Objects do
     field :name, non_null(:string)
 
     field :quests, :quest_collection do
-      resolve dataloader(Repo, :quests,
-                callback: fn items, _, _ ->
-                  result = %{nodes: items, total_count: Enum.count(items)}
-                  {:ok, result}
-                end
-              )
+      resolve dataloader(Repo, :quests, callback: &Collection.callback/3)
     end
   end
 
@@ -80,7 +77,7 @@ defmodule RelayWithoutFuss.Schema.Objects do
       arg :after, :string
       arg :before, :string
 
-      resolve dataloader(Repo, :resources, callback: &Relay.connection_callback/3)
+      resolve dataloader(Repo, :resources, callback: &Pagination.callback/3)
     end
 
     field :program, :program do
@@ -96,12 +93,7 @@ defmodule RelayWithoutFuss.Schema.Objects do
     field :name, non_null(:string)
 
     field :resources, :resource_collection do
-      resolve dataloader(Repo, :resources,
-                callback: fn items, _, _ ->
-                  result = %{nodes: items, total_count: Enum.count(items)}
-                  {:ok, result}
-                end
-              )
+      resolve dataloader(Repo, :resources, callback: &Collection.callback/3)
     end
 
     field :program, :program do
