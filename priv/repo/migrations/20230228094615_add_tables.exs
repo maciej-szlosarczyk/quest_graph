@@ -1,4 +1,4 @@
-defmodule RelayWithoutFuss.Repo.Migrations.AddTables do
+defmodule QuestGraph.Repo.Migrations.AddTables do
   use Ecto.Migration
 
   def change do

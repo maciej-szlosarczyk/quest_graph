@@ -7,14 +7,14 @@
 # General application configuration
 import Config
 
-config :relay_without_fuss,
-  ecto_repos: [RelayWithoutFuss.Repo]
+config :quest_graph,
+  ecto_repos: [QuestGraph.Repo]
 
 # Configures the endpoint
-config :relay_without_fuss, RelayWithoutFussWeb.Endpoint,
+config :quest_graph, QuestGraphWeb.Endpoint,
   url: [host: "localhost"],
-  render_errors: [view: RelayWithoutFussWeb.ErrorView, accepts: ~w(html json), layout: false],
-  pubsub_server: RelayWithoutFuss.PubSub,
+  render_errors: [view: QuestGraphWeb.ErrorView, accepts: ~w(html json), layout: false],
+  pubsub_server: QuestGraph.PubSub,
   live_view: [signing_salt: "Ar4xOPoe"]
 
 # Configures the mailer
@@ -24,7 +24,7 @@ config :relay_without_fuss, RelayWithoutFussWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :relay_without_fuss, RelayWithoutFuss.Mailer, adapter: Swoosh.Adapters.Local
+config :quest_graph, QuestGraph.Mailer, adapter: Swoosh.Adapters.Local
 
 # Swoosh API client is needed for adapters other than SMTP.
 config :swoosh, :api_client, false

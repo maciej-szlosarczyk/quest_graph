@@ -1,9 +1,9 @@
-defmodule RelayWithoutFuss.MixProject do
+defmodule QuestGraph.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :relay_without_fuss,
+      app: :quest_graph,
       version: "0.1.0",
       elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -18,7 +18,7 @@ defmodule RelayWithoutFuss.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {RelayWithoutFuss.Application, []},
+      mod: {QuestGraph.Application, []},
       extra_applications: [:logger, :runtime_tools, :opentelemetry_exporter, :opentelemetry]
     ]
   end

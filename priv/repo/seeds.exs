@@ -5,12 +5,12 @@
 # Inside the script, you can read and write to any of your
 # repositories directly:
 #
-#     RelayWithoutFuss.Repo.insert!(%RelayWithoutFuss.SomeSchema{})
+#     QuestGraph.Repo.insert!(%QuestGraph.SomeSchema{})
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 
-alias RelayWithoutFuss.{Program, Quest, Resource, Repo}
+alias QuestGraph.{Program, Quest, Resource, Repo}
 
 first_program = %Program{name: "First Program"}
 second_program = %Program{name: "Second"}
