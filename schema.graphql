@@ -56,7 +56,7 @@ type ResourceConnection implements Connection {
 
 type RootQueryType {
   "A list of program objects paginated with Relay standard."
-  programs(first: Int, last: Int, after: String, before: String): [Program]
+  programs(first: Int, last: Int, after: String, before: String): ProgramConnection
 
   program(id: ID!): ProgramRootObject
 
@@ -69,6 +69,17 @@ type RootQueryType {
   resources: [Resource]
 
   resource(id: ID!): ResourceRootObject
+}
+
+type ProgramConnection implements Connection {
+  edges: [ProgramEdge]
+  edgesCount: Int!
+  pageInfo: PageInfo!
+}
+
+type ProgramEdge implements Edge {
+  cursor: String!
+  node: Program!
 }
 
 type ResourceRootObject {

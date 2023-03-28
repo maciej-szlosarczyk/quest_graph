@@ -24,6 +24,7 @@ defmodule QuestGraph.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import QuestGraph.DataCase
+      import QuestGraph.TestSeeds
     end
   end
 

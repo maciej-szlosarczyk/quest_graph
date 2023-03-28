@@ -123,6 +123,23 @@ defmodule QuestGraph.Schema.Objects do
     field :page_info, non_null(:page_info)
   end
 
+  object :program_edge do
+    interface :edge
+    is_type_of :edge
+
+    field :cursor, non_null(:string)
+    field :node, non_null(:program)
+  end
+
+  object :program_connection do
+    interface :connection
+    is_type_of :connection
+
+    field :edges, list_of(:program_edge)
+    field :edges_count, non_null(:integer)
+    field :page_info, non_null(:page_info)
+  end
+
   object :resource_root_object do
     field :id, non_null(:id)
     field :name, non_null(:string)

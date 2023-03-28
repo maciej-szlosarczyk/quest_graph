@@ -61,6 +61,7 @@ defmodule QuestGraph.MixProject do
       {:mv_opentelemetry, github: "mindvalley/mv-opentelemetry", tag: "v1.7.0"},
 
       # Test
+      {:stream_data, "~> 0.5", only: [:dev, :test], runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false}
     ]

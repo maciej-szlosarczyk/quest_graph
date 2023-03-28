@@ -3,8 +3,11 @@ defmodule QuestGraph.Schema do
 
   use Absinthe.Schema
 
+  alias QuestGraph.Schema.Pagination
   alias QuestGraph.Repo
   alias QuestGraph.{Program, Quest, Resource}
+
+  import Ecto.Query, only: [from: 2]
 
   import_types(QuestGraph.Schema.Objects)
 
@@ -28,15 +31,17 @@ defmodule QuestGraph.Schema do
     @desc """
     A list of program objects paginated with Relay standard.
     """
-    field :programs, type: list_of(:program) do
+    field :programs, type: :program_connection do
       arg :first, :integer
       arg :last, :integer
       arg :after, :string
       arg :before, :string
 
-      resolve fn _, _ ->
-        programs = Repo.all(Program)
-        {:ok, programs}
+      resolve fn args, _resolution ->
+        query = from p in Program, order_by: [desc: p.id], select: p
+        programs = Repo.all(query)
+        result = Pagination.callback(programs, nil, args)
+        {:ok, result}
       end
     end
 

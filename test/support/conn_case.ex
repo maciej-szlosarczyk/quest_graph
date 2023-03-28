@@ -23,6 +23,7 @@ defmodule QuestGraphWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import QuestGraphWeb.ConnCase
+      import QuestGraph.TestSeeds
 
       alias QuestGraphWeb.Router.Helpers, as: Routes
 

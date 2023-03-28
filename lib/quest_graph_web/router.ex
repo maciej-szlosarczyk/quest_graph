@@ -34,7 +34,7 @@ defmodule QuestGraphWeb.Router do
     )
   end
 
-  scope "/graph" do
+  scope "/graphql" do
     pipe_through :graphql
 
     forward("/", Absinthe.Plug, schema: QuestGraph.Schema, json_codec: Jason)

@@ -1,146 +1,112 @@
 defmodule QuestGraph.Schema.Pagination do
-  require OpenTelemetry.Tracer
+  alias QuestGraph.Schema.Cursor
 
   defmodule PageInfo do
     defstruct [:has_previous_page, :has_next_page, :start_cursor, :end_cursor]
+
+    @type t() :: %__MODULE__{
+            has_previous_page: boolean(),
+            has_next_page: boolean(),
+            start_cursor: Cursor.t() | nil,
+            end_cursor: Cursor.t() | nil
+          }
   end
 
-  defstruct [:edges, :__all_edges__, :page_info]
+  defmodule Edge do
+    defstruct [:cursor, :node]
 
-  defp parse_before(args) do
-    case args do
-      %{before: ""} ->
-        0
+    alias QuestGraph.Schema.Cursor
 
-      %{before: before} ->
-        before = Base.decode64!(before)
-        {_source, id} = :erlang.binary_to_term(before)
-        id
+    @type t() :: %__MODULE__{cursor: Cursor.t(), node: %{id: term()}}
 
-      _ ->
-        0
-    end
+    @spec encode(%{id: term()}) :: t()
+    def encode(item), do: %{cursor: Cursor.encode(item), node: item}
   end
 
-  defp parse_after(args) do
-    case args do
-      %{after: ""} ->
-        :infinity
+  defstruct [:edges, :edges_count, :__all_edges__, :page_info]
 
-      %{after: after_cursor} ->
-        after_cursor = Base.decode64!(after_cursor)
-        {_source, id} = :erlang.binary_to_term(after_cursor)
-        id
+  def is_after_cursor?(_, nil), do: true
+  def is_after_cursor?(%{id: id}, cursor), do: id > cursor
 
-      _ ->
-        :infinity
-    end
-  end
+  def is_before_cursor?(_, nil), do: true
+  def is_before_cursor?(%{id: id}, cursor), do: id < cursor
 
-  def between_cursors?(%{id: id}, before_cursor, after_cursor) do
-    before_cursor < id and id < after_cursor
-  end
+  def callback(nodes, parent, args) do
+    metadata = %{nodes: nodes, parent: parent, args: args}
 
-  def apply_cursor_to_all_edges(all_edges, before_cursor, after_cursor) do
-    Enum.filter(all_edges, fn i -> between_cursors?(i, before_cursor, after_cursor) end)
-  end
+    :telemetry.span([:quest_graph, :pagination_callback], metadata, fn ->
+      parsed_args = parse_args(args)
+      total_count = Enum.count(nodes)
 
-  def has_previous_page?(edges, before_cursor, after_cursor, first, last) do
-    Enum.count(edges) > last
-  end
+      result = %__MODULE__{
+        edges: [],
+        __all_edges__: nodes,
+        edges_count: total_count,
+        page_info: %PageInfo{}
+      }
 
-  def callback(items, parent, args) do
-    parent_schema = parent.__struct__
-    source = parent_schema.__schema__(:source)
+      first_item = Enum.at(nodes, 0)
+      last_item = Enum.at(nodes, -1)
 
-    OpenTelemetry.Tracer.with_span "#{__MODULE__}.callback/3" do
-      before_cursor = parse_before(args)
-      after_cursor = parse_after(args)
+      # First we filter with `after` and `before` arguments.
+      cursors_applied =
+        nodes
+        |> Enum.filter(&is_after_cursor?(&1, parsed_args[:after_cursor]))
+        |> Enum.filter(&is_before_cursor?(&1, parsed_args[:before_cursor]))
 
-      items_after_cursor =
-        Enum.filter(items, fn i -> between_cursors?(i, before_cursor, after_cursor) end)
+      result = Map.put(result, :edges, cursors_applied)
 
-      result =
-        case args do
+      # Then, we apply `first` and `last` arguments to the filtered list.
+      after_limit_applied =
+        case parsed_args do
           %{first: first} ->
-            after_items =
-              Enum.take(items_after_cursor, first)
-              |> Enum.map(fn item ->
-                cursor = {source, item.id} |> :erlang.term_to_binary() |> Base.encode64()
-                %{cursor: cursor, node: item}
-              end)
-
-            has_next_page = Enum.count(after_items) > 0
-            has_previous_page = 0 > 0
-            first = List.first(after_items)
-            last = List.last(after_items)
-
-            start_cursor = if first, do: first.cursor
-            end_cursor = if last, do: last.cursor
-
-            %{
-              edges: after_items,
-              edges_count: Enum.count(items),
-              internal_all_edges: items,
-              page_info: %{
-                has_next_page: has_next_page,
-                has_previous_page: has_previous_page,
-                start_cursor: start_cursor,
-                end_cursor: end_cursor
-              }
-            }
+            Enum.take(cursors_applied, first)
 
           %{last: last} ->
-            after_items =
-              Enum.take(items_after_cursor, -last)
-              |> Enum.map(fn item ->
-                cursor = {"id", item.id} |> :erlang.term_to_binary() |> Base.encode64()
-                %{cursor: cursor, node: item}
-              end)
+            Enum.take(cursors_applied, -last)
 
-            has_next_page = Enum.count(after_items) > 0
-            has_previous_page = 0 > 0
-            first = List.first(after_items)
-            last = List.last(after_items)
-
-            start_cursor = if first, do: first.cursor
-            end_cursor = if last, do: last.cursor
-
-            %{
-              edges: after_items,
-              edges_count: Enum.count(items),
-              internal_all_edges: items,
-              page_info: %{
-                has_next_page: has_next_page,
-                has_previous_page: has_previous_page,
-                start_cursor: start_cursor,
-                end_cursor: end_cursor
-              }
-            }
-
-            %{
-              edges: after_items,
-              edges_count: Enum.count(items),
-              internal_all_edges: items,
-              page_info: %{
-                has_next_page: has_next_page,
-                has_previous_page: has_previous_page,
-                start_cursor: start_cursor,
-                end_cursor: end_cursor
-              }
-            }
+          %{} ->
+            cursors_applied
         end
 
-      page_info = result.page_info
+      start_after_limit = Enum.at(after_limit_applied, 0)
+      end_after_limit = Enum.at(after_limit_applied, -1)
 
-      OpenTelemetry.Tracer.set_attributes(%{
-        has_next_page: page_info.has_next_page,
-        has_previous_page: page_info.has_previous_page,
-        start_cursor: page_info.start_cursor,
-        end_cursor: page_info.end_cursor
-      })
+      start_cursor = if start_after_limit, do: Cursor.encode(start_after_limit)
+      end_cursor = if end_after_limit, do: Cursor.encode(end_after_limit)
 
-      {:ok, result}
-    end
+      has_previous_page = first_item != start_after_limit
+      has_next_page = last_item != end_after_limit
+
+      edges = Enum.map(after_limit_applied, &Edge.encode(&1))
+
+      page_info =
+        result.page_info
+        |> Map.put(:has_next_page, has_next_page)
+        |> Map.put(:has_previous_page, has_previous_page)
+        |> Map.put(:start_cursor, start_cursor)
+        |> Map.put(:end_cursor, end_cursor)
+
+      result =
+        result
+        |> Map.put(:edges, edges)
+        |> Map.put(:page_info, page_info)
+
+      {result, %{edges_count: result.edges_count}}
+    end)
+  end
+
+  def parse_args(args) do
+    before_cursor = if args[:before], do: args[:before] |> Cursor.decode()
+    after_cursor = if args[:after], do: args[:after] |> Cursor.decode()
+
+    %{
+      before_cursor: before_cursor,
+      after_cursor: after_cursor,
+      first: args[:first],
+      last: args[:last]
+    }
+    |> Enum.filter(fn {_k, v} -> v != nil end)
+    |> Enum.into(%{})
   end
 end

@@ -1,6 +1,4 @@
 defmodule QuestGraph.Schema.Collection do
-  require OpenTelemetry.Tracer
-
   @doc """
   A to use with dataloaded collections that returns the items as well as their total count.
 
@@ -10,13 +8,14 @@ defmodule QuestGraph.Schema.Collection do
         resolve dataloader(Repo, :resources, callback: &Collection.callback/3)
       end
   """
-  def callback(items, _parent, _args) do
-    OpenTelemetry.Tracer.with_span "#{__MODULE__}.callback/3" do
-      count = Enum.count(items)
-      OpenTelemetry.Tracer.set_attributes(%{count: count})
+  @spec callback([any], any, any) :: {:ok, false}
+  def callback(nodes, parent, args) do
+    metadata = %{nodes: nodes, parent: parent, args: args}
 
-      result = %{nodes: items, total_count: count}
-      {:ok, result}
-    end
+    :telemetry.span([:quest_graph, :collection_callback], metadata, fn ->
+      total_count = Enum.count(nodes)
+      result = %{nodes: nodes, total_count: total_count}
+      {{:ok, result}, %{total_count: total_count}}
+    end)
   end
 end
