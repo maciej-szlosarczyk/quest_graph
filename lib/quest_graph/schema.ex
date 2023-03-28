@@ -57,15 +57,17 @@ defmodule QuestGraph.Schema do
     @desc """
     A list of quest objects paginated with Relay standard.
     """
-    field :quests, type: list_of(:quest) do
+    field :quests, type: :quest_connection do
       arg :first, :integer
       arg :last, :integer
       arg :after, :string
       arg :before, :string
 
-      resolve fn _, _ ->
-        quests = Repo.all(Quest)
-        {:ok, quests}
+      resolve fn args, _resolution ->
+        query = from q in Quest, order_by: [desc: q.id], select: q
+        quests = Repo.all(query)
+        result = Pagination.callback(quests, nil, args)
+        {:ok, result}
       end
     end
 

@@ -61,7 +61,7 @@ type RootQueryType {
   program(id: ID!): ProgramRootObject
 
   "A list of quest objects paginated with Relay standard."
-  quests(first: Int, last: Int, after: String, before: String): [Quest]
+  quests(first: Int, last: Int, after: String, before: String): QuestConnection
 
   quest(id: ID!): QuestRootObject
 
