@@ -27,12 +27,7 @@ type PageInfo {
   endCursor: String
 }
 
-type ResourceCollection {
-  nodes: [Resource]
-  totalCount: Int!
-}
-
-type QuestCollection {
+type Quests {
   nodes: [Quest]
   totalCount: Int!
 }
@@ -44,7 +39,7 @@ interface Node {
 type Quest implements Node {
   id: ID!
   name: String!
-  resources: ResourceCollection
+  resources: Resources
   program: Program
 }
 
@@ -66,7 +61,7 @@ type RootQueryType {
   quest(id: ID!): QuestRootObject
 
   "A list of resource objects paginated with Relay standard."
-  resources: [Resource]
+  resources(first: Int, last: Int, after: String, before: String): ResourceConnection
 
   resource(id: ID!): ResourceRootObject
 }
@@ -91,7 +86,7 @@ type ResourceRootObject {
 type ProgramRootObject {
   id: ID!
   name: String!
-  quests(first: Int, last: Int, after: String, before: String): QuestConnection
+  quests(first: Int, last: Int, after: String, before: String, name: String): QuestConnection
 }
 
 type ResourceEdge implements Edge {
@@ -119,5 +114,10 @@ interface Connection {
 type Program implements Node {
   id: ID!
   name: String!
-  quests: QuestCollection
+  quests: Quests
+}
+
+type Resources {
+  nodes: [Resource]
+  totalCount: Int!
 }

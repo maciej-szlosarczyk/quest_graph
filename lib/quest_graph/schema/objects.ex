@@ -29,18 +29,6 @@ defmodule QuestGraph.Schema.Objects do
     field :page_info, non_null(:page_info)
   end
 
-  @desc """
-  A nested collection of nodes. This collection cannot be paginated, but for convenience it
-  includes a total count of element.
-
-  Depending on the specific implementation, totalCount can be loaded with a separate query,
-  by counting items in nodes or with a window function.
-  """
-  interface :nested_collection do
-    field :nodes, list_of(:node)
-    field :total_count, non_null(:integer)
-  end
-
   object :program_root_object do
     field :id, non_null(:id)
     field :name, non_null(:string)
@@ -63,7 +51,7 @@ defmodule QuestGraph.Schema.Objects do
     field :id, non_null(:id)
     field :name, non_null(:string)
 
-    field :quests, :quest_collection do
+    field :quests, :quests do
       resolve dataloader(Repo, :quests, callback: &Collection.callback/3)
     end
   end
@@ -93,7 +81,7 @@ defmodule QuestGraph.Schema.Objects do
     field :id, non_null(:id)
     field :name, non_null(:string)
 
-    field :resources, :resource_collection do
+    field :resources, :resources do
       resolve dataloader(Repo, :resources, callback: &Collection.callback/3)
     end
 
@@ -102,7 +90,7 @@ defmodule QuestGraph.Schema.Objects do
     end
   end
 
-  object :quest_collection do
+  object :quests do
     field :nodes, list_of(:quest)
     field :total_count, non_null(:integer)
   end
@@ -162,7 +150,7 @@ defmodule QuestGraph.Schema.Objects do
     end
   end
 
-  object :resource_collection do
+  object :resources do
     field :nodes, list_of(:resource)
     field :total_count, non_null(:integer)
   end

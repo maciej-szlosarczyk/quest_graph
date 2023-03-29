@@ -4,7 +4,7 @@ defmodule QuestGraph.Schema.Collection do
 
   ## Example usage
 
-      field :resources, :resource_collection do
+      field :resources, :resources do
         resolve dataloader(Repo, :resources, callback: &Collection.callback/3)
       end
   """

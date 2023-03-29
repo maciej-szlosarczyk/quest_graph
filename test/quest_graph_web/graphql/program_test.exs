@@ -153,6 +153,7 @@ defmodule QuestGraphWeb.Graphql.ProgramTest do
         id,
         name,
         quests(name: $name) {
+          edgesCount,
           edges {
             node {
               id,
@@ -182,6 +183,7 @@ defmodule QuestGraphWeb.Graphql.ProgramTest do
     assert %{"quests" => returned_quests} = program
 
     expected_edges = []
+    expected_edges_count = 0
 
     expected_page_info = %{
       "startCursor" => nil,
@@ -190,6 +192,7 @@ defmodule QuestGraphWeb.Graphql.ProgramTest do
       "hasPreviousPage" => false
     }
 
+    assert expected_edges_count == get_in(returned_quests, ["edgesCount"])
     assert expected_edges == get_in(returned_quests, ["edges"])
     assert expected_page_info == get_in(returned_quests, ["pageInfo"])
   end
