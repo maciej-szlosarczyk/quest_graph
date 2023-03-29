@@ -31,7 +31,7 @@ defmodule QuestGraphWeb.Graphql.ResourcesTest do
 
     assert %{"data" => data} = conn.private[:absinthe_response]
     assert %{"resources" => returned_resources} = data
-    assert %{"edgesCount" => 3000} = returned_resources
+    assert %{"edgesCount" => 600} = returned_resources
 
     expected_edges =
       resources
@@ -92,7 +92,7 @@ defmodule QuestGraphWeb.Graphql.ResourcesTest do
 
     assert %{"data" => data} = conn.private[:absinthe_response]
     assert %{"resources" => returned_resources} = data
-    assert %{"edgesCount" => 3000} = returned_resources
+    assert %{"edgesCount" => 600} = returned_resources
 
     expected_edges =
       resources

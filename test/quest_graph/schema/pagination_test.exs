@@ -2,10 +2,11 @@ defmodule QuestGraph.Schema.PaginationTest do
   use QuestGraph.DataCase, async: true
   use ExUnitProperties
 
+  alias QuestGraph.Schema.Pagination.Edge
   alias QuestGraph.Schema.Cursor
   alias QuestGraph.Schema.Pagination
 
-  describe "callback/3 with arguments" do
+  describe "apply_relay_pagination/2 with arguments" do
     setup [:attach_telemetry_handler]
 
     property "executes a telemetry event" do
@@ -17,17 +18,17 @@ defmodule QuestGraph.Schema.PaginationTest do
 
         count = Enum.count(list)
         args = %{first: 10}
-        Pagination.callback(list, nil, args)
+        Pagination.apply_relay_pagination(list, args)
 
         assert_receive {:telemetry_event,
                         %{
-                          event: [:quest_graph, :pagination_callback, :start],
-                          metadata: %{nodes: ^list, args: %{}, parent: nil}
+                          event: [:quest_graph, :pagination, :apply_relay_pagination, :start],
+                          metadata: %{nodes: ^list, args: %{}}
                         }}
 
         assert_receive {:telemetry_event,
                         %{
-                          event: [:quest_graph, :pagination_callback, :stop],
+                          event: [:quest_graph, :pagination, :apply_relay_pagination, :stop],
                           metadata: %{edges_count: ^count}
                         }}
       end
@@ -36,11 +37,11 @@ defmodule QuestGraph.Schema.PaginationTest do
     test "%{} args" do
       list = [1] |> Enum.map(fn x -> %{id: x} end)
       args = %{}
-      result = Pagination.callback(list, nil, args)
+      result = Pagination.apply_relay_pagination(list, args)
 
       expected_result = %Pagination{
         __all_edges__: list,
-        edges: [%{cursor: Cursor.encode(%{id: 1}), node: %{id: 1}}],
+        edges: [%Edge{cursor: Cursor.encode(%{id: 1}), node: %{id: 1}}],
         edges_count: 1,
         page_info: %QuestGraph.Schema.Pagination.PageInfo{
           has_previous_page: false,
@@ -58,21 +59,21 @@ defmodule QuestGraph.Schema.PaginationTest do
       cursor = Cursor.encode(%{id: 5})
       list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] |> Enum.map(fn x -> %{id: x} end)
       args = %{first: limit, after: cursor}
-      result = Pagination.callback(list, nil, args)
+      result = Pagination.apply_relay_pagination(list, args)
 
       expected_result = %Pagination{
         __all_edges__: list,
         edges: [
-          %{cursor: Cursor.encode(%{id: 6}), node: %{id: 6}},
-          %{cursor: Cursor.encode(%{id: 7}), node: %{id: 7}},
-          %{cursor: Cursor.encode(%{id: 8}), node: %{id: 8}},
-          %{cursor: Cursor.encode(%{id: 9}), node: %{id: 9}},
-          %{cursor: Cursor.encode(%{id: 10}), node: %{id: 10}},
-          %{cursor: Cursor.encode(%{id: 11}), node: %{id: 11}},
-          %{cursor: Cursor.encode(%{id: 12}), node: %{id: 12}},
-          %{cursor: Cursor.encode(%{id: 13}), node: %{id: 13}},
-          %{cursor: Cursor.encode(%{id: 14}), node: %{id: 14}},
-          %{cursor: Cursor.encode(%{id: 15}), node: %{id: 15}}
+          %Edge{cursor: Cursor.encode(%{id: 6}), node: %{id: 6}},
+          %Edge{cursor: Cursor.encode(%{id: 7}), node: %{id: 7}},
+          %Edge{cursor: Cursor.encode(%{id: 8}), node: %{id: 8}},
+          %Edge{cursor: Cursor.encode(%{id: 9}), node: %{id: 9}},
+          %Edge{cursor: Cursor.encode(%{id: 10}), node: %{id: 10}},
+          %Edge{cursor: Cursor.encode(%{id: 11}), node: %{id: 11}},
+          %Edge{cursor: Cursor.encode(%{id: 12}), node: %{id: 12}},
+          %Edge{cursor: Cursor.encode(%{id: 13}), node: %{id: 13}},
+          %Edge{cursor: Cursor.encode(%{id: 14}), node: %{id: 14}},
+          %Edge{cursor: Cursor.encode(%{id: 15}), node: %{id: 15}}
         ],
         edges_count: 15,
         page_info: %QuestGraph.Schema.Pagination.PageInfo{
@@ -91,13 +92,13 @@ defmodule QuestGraph.Schema.PaginationTest do
       cursor = Cursor.encode(%{id: 5})
       list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] |> Enum.map(fn x -> %{id: x} end)
       args = %{last: limit, after: cursor}
-      result = Pagination.callback(list, nil, args)
+      result = Pagination.apply_relay_pagination(list, args)
 
       expected_result = %Pagination{
         __all_edges__: list,
         edges: [
-          %{cursor: Cursor.encode(%{id: 14}), node: %{id: 14}},
-          %{cursor: Cursor.encode(%{id: 15}), node: %{id: 15}}
+          %Edge{cursor: Cursor.encode(%{id: 14}), node: %{id: 14}},
+          %Edge{cursor: Cursor.encode(%{id: 15}), node: %{id: 15}}
         ],
         edges_count: 15,
         page_info: %QuestGraph.Schema.Pagination.PageInfo{
@@ -123,17 +124,17 @@ defmodule QuestGraph.Schema.PaginationTest do
           |> Enum.map(fn x -> %{id: x} end)
 
         count = Enum.count(list)
-        Pagination.callback(list, nil, %{})
+        Pagination.apply_relay_pagination(list, %{})
 
         assert_receive {:telemetry_event,
                         %{
-                          event: [:quest_graph, :pagination_callback, :start],
-                          metadata: %{nodes: ^list, args: %{}, parent: nil}
+                          event: [:quest_graph, :pagination, :apply_relay_pagination, :start],
+                          metadata: %{nodes: ^list, args: %{}}
                         }}
 
         assert_receive {:telemetry_event,
                         %{
-                          event: [:quest_graph, :pagination_callback, :stop],
+                          event: [:quest_graph, :pagination, :apply_relay_pagination, :stop],
                           metadata: %{edges_count: ^count}
                         }}
       end
@@ -141,7 +142,7 @@ defmodule QuestGraph.Schema.PaginationTest do
 
     test "handles empty list properly" do
       count = 0
-      result = Pagination.callback([], nil, %{})
+      result = Pagination.apply_relay_pagination([], %{})
 
       expected_result = %Pagination{
         page_info: %QuestGraph.Schema.Pagination.PageInfo{
@@ -166,9 +167,9 @@ defmodule QuestGraph.Schema.PaginationTest do
           |> Enum.map(fn x -> %{id: x} end)
 
         count = Enum.count(list)
-        result = Pagination.callback(list, nil, %{})
+        result = Pagination.apply_relay_pagination(list, %{})
 
-        edges = for edge <- list, do: %{node: edge, cursor: Cursor.encode(edge)}
+        edges = for edge <- list, do: Edge.encode(edge)
 
         start_cursor = Enum.at(list, 0) |> Cursor.encode()
         end_cursor = Enum.at(list, -1) |> Cursor.encode()
@@ -195,9 +196,9 @@ defmodule QuestGraph.Schema.PaginationTest do
     test_ref = {context.case, context.test, ref}
 
     events = [
-      [:quest_graph, :pagination_callback, :start],
-      [:quest_graph, :pagination_callback, :stop],
-      [:quest_graph, :pagination_callback, :exception]
+      [:quest_graph, :pagination, :apply_relay_pagination, :start],
+      [:quest_graph, :pagination, :apply_relay_pagination, :stop],
+      [:quest_graph, :pagination, :apply_relay_pagination, :exception],
     ]
 
     send_function =

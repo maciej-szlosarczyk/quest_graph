@@ -1,5 +1,6 @@
 defmodule QuestGraph.Schema.Cursor do
   @spec encode(term()) :: String.t()
+  @type t() :: String.t()
 
   def encode(%{id: id}) do
     "id:#{id}"

@@ -31,7 +31,7 @@ defmodule QuestGraphWeb.Graphql.QuestsTest do
 
     assert %{"data" => data} = conn.private[:absinthe_response]
     assert %{"quests" => returned_quests} = data
-    assert %{"edgesCount" => 1000} = returned_quests
+    assert %{"edgesCount" => 200} = returned_quests
 
     expected_edges =
       quests

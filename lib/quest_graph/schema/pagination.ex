@@ -2,6 +2,8 @@ defmodule QuestGraph.Schema.Pagination do
   alias QuestGraph.Schema.Cursor
 
   defmodule PageInfo do
+    alias QuestGraph.Schema.Cursor
+
     defstruct [:has_previous_page, :has_next_page, :start_cursor, :end_cursor]
 
     @type t() :: %__MODULE__{
@@ -19,11 +21,18 @@ defmodule QuestGraph.Schema.Pagination do
 
     @type t() :: %__MODULE__{cursor: Cursor.t(), node: %{id: term()}}
 
-    @spec encode(%{id: term()}) :: t()
-    def encode(item), do: %{cursor: Cursor.encode(item), node: item}
+    @spec encode(%{:id => term()}) :: t()
+    def encode(item), do: %__MODULE__{cursor: Cursor.encode(item), node: item}
   end
 
   defstruct [:edges, :edges_count, :__all_edges__, :page_info]
+
+  @type t() :: %__MODULE__{
+          edges: [Edge.t()],
+          edges_count: integer(),
+          __all_edges__: [map()],
+          page_info: PageInfo.t()
+        }
 
   def is_after_cursor?(_, nil), do: true
   def is_after_cursor?(%{id: id}, cursor), do: id > cursor
@@ -31,10 +40,12 @@ defmodule QuestGraph.Schema.Pagination do
   def is_before_cursor?(_, nil), do: true
   def is_before_cursor?(%{id: id}, cursor), do: id < cursor
 
-  def callback(nodes, parent, args) do
-    metadata = %{nodes: nodes, parent: parent, args: args}
+  @spec apply_relay_pagination([%{id: term()}], map()) ::
+          {__MODULE__.t(), %{edges_count: integer()}}
+  def apply_relay_pagination(nodes, args) do
+    metadata = %{nodes: nodes, args: args}
 
-    :telemetry.span([:quest_graph, :pagination_callback], metadata, fn ->
+    :telemetry.span([:quest_graph, :pagination, :apply_relay_pagination], metadata, fn ->
       parsed_args = parse_args(args)
       total_count = Enum.count(nodes)
 
@@ -96,6 +107,18 @@ defmodule QuestGraph.Schema.Pagination do
     end)
   end
 
+  def callback(nodes, parent, args) do
+    metadata = %{nodes: nodes, parent: parent, args: args}
+
+    result =
+      :telemetry.span([:quest_graph, :pagination, :dataloaded_callback], metadata, fn ->
+        {apply_relay_pagination(nodes, args), %{}}
+      end)
+
+    {:ok, result}
+  end
+
+  @spec parse_args(map()) :: map()
   def parse_args(args) do
     before_cursor = if args[:before], do: args[:before] |> Cursor.decode()
     after_cursor = if args[:after], do: args[:after] |> Cursor.decode()

@@ -40,7 +40,7 @@ defmodule QuestGraph.Schema do
       resolve fn args, _resolution ->
         query = from p in Program, order_by: [desc: p.id], select: p
         programs = Repo.all(query)
-        result = Pagination.callback(programs, nil, args)
+        result = Pagination.apply_relay_pagination(programs, args)
         {:ok, result}
       end
     end
@@ -66,7 +66,7 @@ defmodule QuestGraph.Schema do
       resolve fn args, _resolution ->
         query = from q in Quest, order_by: [desc: q.id], select: q
         quests = Repo.all(query)
-        result = Pagination.callback(quests, nil, args)
+        result = Pagination.apply_relay_pagination(quests, args)
         {:ok, result}
       end
     end
@@ -92,7 +92,7 @@ defmodule QuestGraph.Schema do
       resolve fn args, _ ->
         query = from r in Resource, order_by: [desc: r.id], select: r
         resources = Repo.all(query)
-        result = Pagination.callback(resources, nil, args)
+        result = Pagination.apply_relay_pagination(resources, args)
         {:ok, result}
       end
     end

@@ -13,7 +13,7 @@ defmodule QuestGraph.TestSeeds do
 
   def seed_quests(%{first_program: first_program, second_program: second_program}) do
     quests =
-      for i <- 1..500 do
+      for i <- 1..100 do
         first_quest = %Quest{
           program_id: first_program.id,
           name: "Quest for HyperMemory program: #{i}"
