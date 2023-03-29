@@ -5,7 +5,11 @@ defmodule QuestGraph.Repo do
 
   import Ecto.Query, only: [from: 2]
 
-  def query(queryable, _info) do
+  def query(QuestGraph.Quest, %{name: name}) do
+    from q in QuestGraph.Quest, where: ilike(q.name, ^"%#{name}%")
+  end
+
+  def query(queryable, _args) do
     from q in queryable, select: q, order_by: [desc: :id]
   end
 

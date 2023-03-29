@@ -50,6 +50,7 @@ defmodule QuestGraph.Schema.Objects do
       arg :last, :integer
       arg :after, :string
       arg :before, :string
+      arg :name, :string
 
       resolve dataloader(Repo, :quests, callback: &Pagination.callback/3)
     end
