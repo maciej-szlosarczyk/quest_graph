@@ -72,6 +72,53 @@ defmodule QuestGraphWeb.Graphql.ProgramTest do
     assert expected_page_info == get_in(returned_quests, ["pageInfo"])
   end
 
+  test "performance characterstics", context do
+    %{conn: conn, first_program: first_program} = context
+
+    query = """
+    query($id: ID!, $name: String) {
+      program(id: $id) {
+        id,
+        name,
+        quests(first: 100, name: $name) {
+          edges {
+            node {
+              id
+              __typename,
+            },
+          cursor,
+          },
+          pageInfo{
+            startCursor,
+            endCursor,
+            hasNextPage,
+            hasPreviousPage
+          }
+        }
+        }
+    }
+    """
+
+    attach_telemetry_handler(context)
+
+    conn = make_graphql_query(conn, query, %{"id" => first_program.id})
+    assert conn.status == 200
+
+    assert_receive {:telemetry_event,
+                    %{
+                      event: [:quest_graph, :pagination, :apply_relay_pagination, :start]
+                    }}
+
+    assert_receive {:telemetry_event,
+                    %{
+                      event: [:quest_graph, :pagination, :apply_relay_pagination, :stop],
+                      measurements: %{duration: duration}
+                    }}
+
+    native_second = :erlang.convert_time_unit(1, :second, :native)
+    assert duration < native_second
+  end
+
   test "filter and paginate", %{
     conn: conn,
     first_program: first_program,
@@ -209,5 +256,25 @@ defmodule QuestGraphWeb.Graphql.ProgramTest do
 
     absinthe_response = Jason.decode!(conn.resp_body)
     Plug.Conn.put_private(conn, :absinthe_response, absinthe_response)
+  end
+
+  def attach_telemetry_handler(context) do
+    ref = make_ref()
+    test_ref = {context.case, context.test, ref}
+
+    events = [
+      [:quest_graph, :pagination, :apply_relay_pagination, :start],
+      [:quest_graph, :pagination, :apply_relay_pagination, :stop],
+      [:quest_graph, :pagination, :apply_relay_pagination, :exception]
+    ]
+
+    send_function =
+      &Kernel.send(
+        self(),
+        {:telemetry_event, %{event: &1, measurements: &2, metadata: &3, config: &4}}
+      )
+
+    :telemetry.attach_many(test_ref, events, send_function, nil)
+    on_exit(fn -> :telemetry.detach(test_ref) end)
   end
 end
