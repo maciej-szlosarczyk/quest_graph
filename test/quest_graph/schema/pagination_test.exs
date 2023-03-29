@@ -198,7 +198,7 @@ defmodule QuestGraph.Schema.PaginationTest do
     events = [
       [:quest_graph, :pagination, :apply_relay_pagination, :start],
       [:quest_graph, :pagination, :apply_relay_pagination, :stop],
-      [:quest_graph, :pagination, :apply_relay_pagination, :exception],
+      [:quest_graph, :pagination, :apply_relay_pagination, :exception]
     ]
 
     send_function =

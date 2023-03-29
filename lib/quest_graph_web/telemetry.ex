@@ -57,7 +57,14 @@ defmodule QuestGraphWeb.Telemetry do
       summary("vm.memory.total", unit: {:byte, :kilobyte}),
       summary("vm.total_run_queue_lengths.total"),
       summary("vm.total_run_queue_lengths.cpu"),
-      summary("vm.total_run_queue_lengths.io")
+      summary("vm.total_run_queue_lengths.io"),
+
+      # Custom metrics about relay pagination
+      summary("quest_graph.pagination.apply_relay_pagination.stop.duration",
+        unit: {:native, :millisecond}
+      ),
+      summary("quest_graph.pagination.callback.stop.duration", unit: {:native, :millisecond}),
+      counter("quest_graph.pagination.callback.stop.duration")
     ]
   end
 

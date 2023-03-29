@@ -36,10 +36,11 @@ defmodule QuestGraph.TestSeeds do
   end
 
   def seed_resources(%{quests: quests}) do
-    resources = for quest <- quests, i <- 1..3 do
-      resource = %Resource{name: "Resource for quest #{quest.id}: #{i}", quest_id: quest.id}
-      Repo.insert!(resource)
-    end
+    resources =
+      for quest <- quests, i <- 1..3 do
+        resource = %Resource{name: "Resource for quest #{quest.id}: #{i}", quest_id: quest.id}
+        Repo.insert!(resource)
+      end
 
     %{resources: resources}
   end

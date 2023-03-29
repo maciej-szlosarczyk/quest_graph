@@ -111,7 +111,7 @@ defmodule QuestGraph.Schema.Pagination do
     metadata = %{nodes: nodes, parent: parent, args: args}
 
     result =
-      :telemetry.span([:quest_graph, :pagination, :dataloaded_callback], metadata, fn ->
+      :telemetry.span([:quest_graph, :pagination, :callback], metadata, fn ->
         {apply_relay_pagination(nodes, args), %{}}
       end)
 
