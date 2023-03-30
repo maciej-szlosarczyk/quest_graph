@@ -115,7 +115,7 @@ defmodule QuestGraphWeb.Graphql.ProgramTest do
                       measurements: %{duration: duration}
                     }}
 
-    native_second = :erlang.convert_time_unit(1, :second, :native)
+    native_second = :erlang.convert_time_unit(10, :millisecond, :native)
     assert duration < native_second
   end
 
